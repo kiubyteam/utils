@@ -1,23 +1,26 @@
-name: Validate Schemas
+name: Validate JSON Schemas
 
 on:
-  pull_request:
+  push:
+    branches: ["main"]
     paths:
       - "schemas/**"
       - ".github/workflows/validate-schemas.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "schemas/**"
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        schema: [raidbot]
+    timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Schemas
+        uses: docker://ghcr.io/ajv-validator/ajv-cli:8.2.0
         with:
-          node-version: 20
-      - run: npm install -g @hyperjump/json-schema-validator
-      - run: |
-          SCHEMA_VERSION=$(jq -r '.schemas."${{ matrix.schema }}".latest' schemas/_registry.json)
-          validate-schema schemas/${{ matrix.schema }}/$SCHEMA_VERSION/schema.json
+          args: validate -s schemas/**/v*/schema.json -d schemas/**/v*/test/valid/*.json
