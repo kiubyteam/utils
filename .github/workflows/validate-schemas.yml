@@ -1,0 +1,23 @@
+name: Validate Schemas
+
+on:
+  pull_request:
+    paths:
+      - "schemas/**"
+      - ".github/workflows/validate-schemas.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        schema: [raidbot]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install -g @hyperjump/json-schema-validator
+      - run: |
+          SCHEMA_VERSION=$(jq -r '.schemas."${{ matrix.schema }}".latest' schemas/_registry.json)
+          validate-schema schemas/${{ matrix.schema }}/$SCHEMA_VERSION/schema.json

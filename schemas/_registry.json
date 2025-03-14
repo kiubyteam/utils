@@ -1,0 +1,11 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"schemas": {
+		"raidbot": {
+			"latest": "1.0.0",
+			"versions": {
+				"test-1.0.0": "./raidbot/1.0.0/schema.json"
+			}
+		}
+	}
+}
