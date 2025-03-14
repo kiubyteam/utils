@@ -2,14 +2,11 @@ name: Validate JSON Schemas
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
     paths:
       - "schemas/**"
-      - ".github/workflows/validate-schemas.yml"
   pull_request:
-    branches: ["main"]
-    paths:
-      - "schemas/**"
+    branches: [main]
 
 jobs:
   validate:
@@ -17,10 +14,19 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install AJV
+        run: npm install -g ajv-cli@5.0
 
       - name: Validate Schemas
-        uses: docker://ghcr.io/ajv-validator/ajv-cli:8.2.0
-        with:
-          args: validate -s schemas/**/v*/schema.json -d schemas/**/v*/test/valid/*.json
+        run: |
+          ajv validate -s schemas/**/v*/schema.json -d schemas/**/v*/test/valid/*.json \
+          -r schemas/**/v*/dependencies/*.json \
+          --strict=true \
+          --all-errors
